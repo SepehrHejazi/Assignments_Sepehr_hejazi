@@ -1,0 +1,101 @@
+#UNIX Assignment
+
+##Data Inspection
+1. file size,
+number of columns, number of lines, etc... can found with this commands in the order : 
+
+
+###Attributes of `fang_et_al_genotypes`
+
+```
+head -n 1 fang_et_al_genotypes.txt
+du -h fang_et_al_genotypes.txt
+awk -F "\t" '{print NF; exit}' fang_et_al_genotypes.txt
+tail -n +3 fang_et_al_genotypes.txt | awk -F "\t" '{print NF; exit}'
+wc fang_et_al_genotypes.txt
+```
+
+By inspecting this file I learned that:
+
+1. 6.1 Mb file size, 2783 lines and , 986 Columns 
+2. gussed that it has same amount of columns in entire file by tailing it and counting columnsa after that
+3. first row is header, the first columns is sample ID and in the following columns are the sequences of each position presented in the 1st row
+
+or
+
+###Attributes of `snp_position.txt`
+
+```
+du -h snp_position.txt
+awk -F "\t" '{print NF; exit}' snp_position.txt
+wc snp_position.txt
+```
+
+By inspecting this file I learned that:
+
+1. 38kB file with 15 columns and 984 rows
+2. point 2
+3. point 3
+
+
+
+##Data Processing
+
+###Maize Data
+lets make a seperate maize file
+```
+grep -e ZMMIL -e ZMMLR -e ZMMMR -e Sample_ID fang_et_al_genotypes.txt > maize_fang.txt
+```
+transpose as you helped! thanks!
+```
+awk -f transpose.awk maize_fang.txt > transposed_maize_genotypes.txt
+```
+sort for join 
+```
+sort -k1,1 transposed_maize__genotypes.txt > sorted transposed_maize__genotypes.txt
+```
+also snp file based on th ecommon column
+
+```
+sort -k1,1 snp_position.txt | cut -f 1,3,4 > sorted_cut_snp.txt
+```
+perform join plz
+
+```
+join -1 1 -2 1  sorted_cut_snp.txt sorted_transposed_maize_genotypes.txt  > maize_with_snp.txt
+```
+sorted worked (finally) sort based on the chromosome
+```
+sort -k3,3n maize_with_snp.txt >sorted_maize_with_snp.txt
+```
+lets discuss the magic for loop here. a for from 1 , 10 in your linux will apply to awk to just select chromosomes with values equal to your for loop. then redirecting them in different files.
+```
+for ((i=1; i<=10; i++)); do awk  -v i="$i" '{if ($2 == i) print $0}' sorted_maize_with_snp.txt >maize"$i"; done
+```
+lets reverse sort and change ? to - with this code
+```
+sort -k3,3nr maize_with_snp.txt | sed 's/?/-/g' > maize_reverse.txt
+```
+same old code used before
+```
+for ((i=1; i<=10; i++)); do awk  -v i="$i" '{if ($2 == i) print $0}' maize_reverse.txt >maize_rev"$i"; done
+```
+easy job. just a simple grep.
+```
+grep unknown maize_with_snp.txt  > maize_unk.txt
+```
+```
+grep multiple  maize_with_snp.txt  > maize_mul.txt
+```
+
+
+Here is my brief description of what this code does
+
+
+###Teosinte Data
+
+
+exact same as maize
+
+
+Here is my brief description of what this code does
